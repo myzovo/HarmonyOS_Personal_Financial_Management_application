@@ -1,0 +1,73 @@
+"D:\Program Files\Huawei\DevEco Studio\tools\node\node.exe" "D:\Program Files\Huawei\DevEco Studio\tools\hvigor\bin\hvigorw.js" --mode module -p module=entry@default -p product=default -p pageType=page -p compileResInc=true -p previewMode=true -p buildRoot=.preview PreviewBuild --watch --analyze=normal --parallel --incremental --daemon
+> hvigor UP-TO-DATE :entry:default@PreBuild...  
+> hvigor Finished :entry:default@CreateModuleInfo... after 2 ms 
+> hvigor Finished :entry:default@MergeProfile... after 6 ms 
+> hvigor Finished :entry:default@CreateBuildProfile... after 3 ms 
+> hvigor Finished :entry:default@PreCheckSyscap... after 1 ms 
+> hvigor Finished :entry:default@GeneratePkgContextInfo... after 7 ms 
+> hvigor Finished :entry:default@ProcessProfile... after 413 ms 
+> hvigor Finished :entry:default@ProcessRouterMap... after 4 ms 
+> hvigor Finished :entry:default@ProcessStartupConfig... after 4 ms 
+> hvigor Finished :entry:default@PreviewProcessResource... after 2 ms 
+> hvigor Finished :entry:default@GenerateLoaderJson... after 14 ms 
+> hvigor Finished :entry:default@PreviewCompileResource... after 366 ms 
+> hvigor Finished :entry:default@PreviewHookCompileResource... after 1 ms 
+> hvigor Finished :entry:default@CopyPreviewProfile... after 6 ms 
+> hvigor Finished :entry:default@ReplacePreviewerPage... after 1 ms 
+> hvigor Finished :entry:buildPreviewerResource... after 1 ms 
+> hvigor Finished :entry:default@PreviewUpdateAssets... after 3 ms 
+> hvigor ERROR: Failed :entry:default@PreviewArkTS... 
+> hvigor ERROR: 10605999 ArkTS Compiler Error
+Error Message: Type 'void & Promise<RdbStore>' is not assignable to type 'RdbStore | null'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:98:7
+10605999 ArkTS Compiler Error
+Error Message: Object is possibly 'null'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:112:13
+10605999 ArkTS Compiler Error
+Error Message: Object is possibly 'null'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:116:13
+10605999 ArkTS Compiler Error
+Error Message: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/AddBill.ets:618:17
+10605999 ArkTS Compiler Error
+Error Message: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/AddBill.ets:620:17
+10605999 ArkTS Compiler Error
+Error Message: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Export.ets:1069:13
+10605999 ArkTS Compiler Error
+Error Message: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Export.ets:1071:13
+10605999 ArkTS Compiler Error
+Error Message: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Export.ets:1147:13
+10605999 ArkTS Compiler Error
+Error Message: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Export.ets:1149:13
+10505001 ArkTS Compiler Error
+Error Message: Type 'void & Promise<RdbStore>' is missing the following properties from type 'RdbStore': version, rebuilt, insert, insertSync, and 39 more. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:98:7
+10505001 ArkTS Compiler Error
+Error Message: Argument of type 'number' is not assignable to parameter of type 'AsyncCallback<RdbStore, void>'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:98:80
+10505001 ArkTS Compiler Error
+Error Message: 'relationalStore' has no exported member named 'ValueBucket'. Did you mean 'ValuesBucket'? At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:143:58
+10505001 ArkTS Compiler Error
+Error Message: 'relationalStore' has no exported member named 'ValueBucket'. Did you mean 'ValuesBucket'? At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/utils/DatabaseHelper.ets:144:40
+10505001 ArkTS Compiler Error
+Error Message: Argument of type '{ id: string; amount: number; type: BillType; category: string; icon: string; description: string; date: string; onEdit: (editBill: Bill) => void; onDelete: (id: string) => void; }' is not assignable to parameter of type '{ category?: string; icon?: string; amount?: number; type?: number; date?: string; description?: string; billId?: string; onDelete?: (id: string) => void; onEdit?: (bill: Bill) => void; }'.
+  Object literal may only specify known properties, and 'id' does not exist in type '{ category?: string; icon?: string; amount?: number; type?: number; date?: string; description?: string; billId?: string; onDelete?: (id: string) => void; onEdit?: (bill: Bill) => void; }'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Index.ets:395:13
+10505001 ArkTS Compiler Error
+Error Message: Argument of type '{ id: string; category: string; icon: string; amount: number; type: BillType; date: string; description: string; onDelete: (id: string) => void; onEdit: (editBill: Bill) => void; }' is not assignable to parameter of type '{ category?: string; icon?: string; amount?: number; type?: number; date?: string; description?: string; billId?: string; onDelete?: (id: string) => void; onEdit?: (bill: Bill) => void; }'.
+  Object literal may only specify known properties, and 'id' does not exist in type '{ category?: string; icon?: string; amount?: number; type?: number; date?: string; description?: string; billId?: string; onDelete?: (id: string) => void; onEdit?: (bill: Bill) => void; }'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/BillList.ets:368:21
+10505001 ArkTS Compiler Error
+Error Message: Argument of type '{ data: PieDataItem[]; size: number; title: string; }' is not assignable to parameter of type '{ data?: PieDataItem[]; chartSize?: number; title?: string; currentIndex?: number; settings?: RenderingContextSettings; context?: CanvasRenderingContext2D; ... 7 more ...; animTimer?: number; }'.
+  Object literal may only specify known properties, and 'size' does not exist in type '{ data?: PieDataItem[]; chartSize?: number; title?: string; currentIndex?: number; settings?: RenderingContextSettings; context?: CanvasRenderingContext2D; ... 7 more ...; animTimer?: number; }'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Statistics.ets:630:11
+10505001 ArkTS Compiler Error
+Error Message: Argument of type '{ data: PieDataItem[]; size: number; title: string; }' is not assignable to parameter of type '{ data?: PieDataItem[]; chartSize?: number; title?: string; currentIndex?: number; settings?: RenderingContextSettings; context?: CanvasRenderingContext2D; ... 7 more ...; animTimer?: number; }'.
+  Object literal may only specify known properties, and 'size' does not exist in type '{ data?: PieDataItem[]; chartSize?: number; title?: string; currentIndex?: number; settings?: RenderingContextSettings; context?: CanvasRenderingContext2D; ... 7 more ...; animTimer?: number; }'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Statistics.ets:660:11
+10505001 ArkTS Compiler Error
+Error Message: Argument of type '{ series: LineSeries[]; width: number; height: number; showLegend: true; }' is not assignable to parameter of type '{ data?: LineDataItem[]; series?: LineSeries[]; title?: string; color?: string; canvasWidth?: number; canvasHeight?: number; showLegend?: boolean; touchIndex?: number; settings?: RenderingContextSettings; ... 11 more ...; animTimer?: number; }'.
+  Object literal may only specify known properties, and 'width' does not exist in type '{ data?: LineDataItem[]; series?: LineSeries[]; title?: string; color?: string; canvasWidth?: number; canvasHeight?: number; showLegend?: boolean; touchIndex?: number; settings?: RenderingContextSettings; ... 11 more ...; animTimer?: number; }'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Statistics.ets:720:13
+10505001 ArkTS Compiler Error
+Error Message: Argument of type '{ data: BarDataItem[]; series: BarSeries[]; width: number; height: number; showLegend: true; }' is not assignable to parameter of type '{ data?: BarDataItem[]; series?: BarSeries[]; title?: string; chartWidth?: number; chartHeight?: number; showLegend?: boolean; animProgress?: number; highlightIndex?: number; ... 7 more ...; barRects?: Rect[]; }'.
+  Object literal may only specify known properties, and 'width' does not exist in type '{ data?: BarDataItem[]; series?: BarSeries[]; title?: string; chartWidth?: number; chartHeight?: number; showLegend?: boolean; animProgress?: number; highlightIndex?: number; ... 7 more ...; barRects?: Rect[]; }'. At File: C:/Users/zhu/Desktop/MyApplication/entry/src/main/ets/pages/Statistics.ets:737:13
+
+> hvigor ERROR: BUILD FAILED in 8 s 624 ms 
+
+Process finished with exit code -1

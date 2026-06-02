@@ -1,0 +1,9 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/AddBill",
+    "pages/BillList",
+    "pages/Statistics",
+    "pages/Export"
+  ]
+}

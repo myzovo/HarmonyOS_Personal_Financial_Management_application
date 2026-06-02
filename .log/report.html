@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记账本 - HarmonyOS 项目开发报告</title>
+  <style>
+    :root {
+      --primary: #287BFF;
+      --primary-light: #E8F0FE;
+      --text: #222222;
+      --gray: #666666;
+      --light-gray: #F5F7FA;
+      --border: #E8E8E8;
+      --white: #FFFFFF;
+      --success: #34C759;
+      --error: #FF3B30;
+      --warning: #FF9500;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--light-gray);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    /* ===== 顶部封面 ===== */
+    .hero {
+      background: linear-gradient(135deg, #1a6dff 0%, #287BFF 50%, #5ca0ff 100%);
+      color: white;
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(30px, -30px); }
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .hero .subtitle {
+      font-size: 18px;
+      opacity: 0.9;
+      position: relative;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      margin-top: 20px;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    /* ===== 导航目录 ===== */
+    .toc {
+      background: var(--white);
+      max-width: 900px;
+      margin: -30px auto 40px;
+      border-radius: 16px;
+      padding: 30px 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      position: relative;
+      z-index: 1;
+    }
+    .toc h2 {
+      font-size: 18px;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 10px;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    .toc a:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .toc a .num {
+      width: 26px;
+      height: 26px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ===== 内容区 ===== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .section {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .section h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--primary-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section h2 .icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .section h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 24px 0 12px;
+      color: var(--text);
+    }
+    .section p {
+      color: var(--gray);
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+
+    /* ===== 功能卡片 ===== */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .feature-card {
+      background: var(--light-gray);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+    .feature-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(40,123,255,0.1);
+    }
+    .feature-card .emoji {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .feature-card h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      color: var(--gray);
+      margin: 0;
+    }
+
+    /* ===== 代码块 ===== */
+    .code-block {
+      background: #1e1e2e;
+      border-radius: 12px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .code-header {
+      background: #2d2d3f;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .code-header .filename {
+      color: #a0a0b0;
+      font-size: 13px;
+      font-family: 'Consolas', monospace;
+    }
+    .code-header .lang {
+      color: var(--primary);
+      font-size: 12px;
+      background: rgba(40,123,255,0.15);
+      padding: 2px 10px;
+      border-radius: 6px;
+    }
+    pre {
+      padding: 20px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    code {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      color: #cdd6f4;
+    }
+    .keyword { color: #cba6f7; }
+    .string { color: #a6e3a1; }
+    .comment { color: #6c7086; font-style: italic; }
+    .type { color: #89b4fa; }
+    .number { color: #fab387; }
+    .function { color: #89dceb; }
+    .decorator { color: #f9e2af; }
+
+    /* ===== 问题与解决方案 ===== */
+    .problem-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .problem-header {
+      background: #FFF5F5;
+      padding: 14px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .problem-header .tag {
+      background: var(--error);
+      color: white;
+      font-size: 12px;
+      padding: 2px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .problem-header .desc {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .solution {
+      padding: 16px 20px;
+      background: #F0FFF4;
+      border-left: 3px solid var(--success);
+    }
+    .solution .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--success);
+      margin-bottom: 8px;
+    }
+    .solution p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* ===== 架构图 ===== */
+    .arch-diagram {
+      background: var(--light-gray);
+      border-radius: 12px;
+      padding: 30px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .arch-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .arch-box {
+      background: var(--white);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 100px;
+    }
+    .arch-box.gray {
+      border-color: var(--border);
+      color: var(--gray);
+    }
+    .arch-arrow {
+      color: var(--gray);
+      font-size: 20px;
+      margin: 6px 0;
+    }
+    .arch-label {
+      font-size: 12px;
+      color: var(--gray);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ===== 表格 ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    th {
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+    }
+    th:first-child { border-radius: 8px 0 0 0; }
+    th:last-child { border-radius: 0 8px 0 0; }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) { background: var(--light-gray); }
+
+    /* ===== 流程图 ===== */
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+    .flow-step {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .flow-arrow {
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    /* ===== 标签 ===== */
+    .tag-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+    .tag {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .tag.green {
+      background: #E8F8EE;
+      color: #34C759;
+    }
+    .tag.orange {
+      background: #FFF3E0;
+      color: #FF9500;
+    }
+
+    /* ===== 页脚 ===== */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--gray);
+      font-size: 13px;
+    }
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 640px) {
+      .hero { padding: 50px 20px 40px; }
+      .hero h1 { font-size: 28px; }
+      .section { padding: 24px 20px; }
+      .toc { padding: 20px; margin: -20px 16px 24px; }
+      .container { padding: 0 12px 40px; }
+      pre { font-size: 12px; padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== 封面 ===== -->
+<div class="hero">
+  <h1>📒 记账本</h1>
+  <div class="subtitle">HarmonyOS 个人财务管理应用 · 开发报告</div>
+  <div class="badge">HarmonyOS SDK 5.1.0 · API 18 · ArkTS Stage 模型</div>
+</div>
+
+<!-- ===== 目录 ===== -->
+<div class="toc">
+  <h2>📑 报告目录</h2>
+  <div class="toc-grid">
+    <a href="#overview"><span class="num">1</span>项目概述</a>
+    <a href="#design"><span class="num">2</span>设计思路</a>
+    <a href="#architecture"><span class="num">3</span>系统架构</a>
+    <a href="#features"><span class="num">4</span>功能实现</a>
+    <a href="#code"><span class="num">5</span>核心代码</a>
+    <a href="#problems"><span class="num">6</span>问题与解决</a>
+    <a href="#summary"><span class="num">7</span>总结</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ===== 1. 项目概述 ===== -->
+  <div class="section" id="overview">
+    <h2><span class="icon">1</span>项目概述</h2>
+    <p>本项目是一个基于 HarmonyOS 平台开发的个人记账应用（记账本），采用 ArkTS 语言和 Stage 模型架构，运行于手机设备。应用提供了完整的账单录入、分类管理、统计分析和数据导出功能，帮助用户轻松管理日常收支。</p>
+
+    <div class="tag-list">
+      <span class="tag">HarmonyOS SDK 5.1.0</span>
+      <span class="tag">ArkTS</span>
+      <span class="tag">Stage 模型</span>
+      <span class="tag">API 18</span>
+      <span class="tag green">RDB 数据库</span>
+      <span class="tag orange">Canvas 图表</span>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="emoji">🏠</div>
+        <h4>首页仪表盘</h4>
+        <p>今日/本月总支出、总收入、结余卡片展示，最近账单一目了然</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">✏️</div>
+        <h4>记一笔</h4>
+        <p>自定义数字键盘、分类图标网格、快捷备注，高效录入账单</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">📋</div>
+        <h4>账单列表</h4>
+        <p>按月份/周筛选，日期分组展示，支持编辑和长按删除</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">📊</div>
+        <h4>统计图表</h4>
+        <p>饼图、折线图、柱状图，分类排行、7天趋势、月度每日</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">📤</div>
+        <h4>数据导出</h4>
+        <p>支持 JSON/CSV 格式，可选月份/年度/全部/自定义范围</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">💾</div>
+        <h4>数据持久化</h4>
+        <p>使用 HarmonyOS RDB 关系型数据库，安全可靠存储账单数据</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 设计思路 ===== -->
+  <div class="section" id="design">
+    <h2><span class="icon">2</span>设计思路</h2>
+
+    <h3>2.1 技术选型</h3>
+    <p>选择 HarmonyOS 原生开发框架，使用 ArkTS（基于 TypeScript 的声明式 UI 语言）配合 Stage 模型应用架构，充分利用系统提供的 UIAbility、RDB 数据库、Canvas 绘图等能力。</p>
+
+    <h3>2.2 页面导航设计</h3>
+    <p>采用底部 TabBar + 页面栈的混合导航模式。首页、账单列表、统计、导出四个主页面通过底部导航栏切换，记账页面通过 pushUrl 压入页面栈，支持返回操作。</p>
+
+    <div class="flow-steps">
+      <div class="flow-step">首页 Index</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">TabBar 切换</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">账单/统计/导出</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">返回首页</div>
+    </div>
+
+    <h3>2.3 数据模型设计</h3>
+    <p>以 Bill 接口为核心数据模型，包含 id、金额、类型（支出/收入）、分类、备注、日期等字段。使用 RDB 关系型数据库持久化存储，通过 DatabaseHelper 单例类封装所有数据库操作。</p>
+
+    <h3>2.4 UI 设计原则</h3>
+    <p>遵循简洁直观的设计风格，统一使用 ThemeColors 集中管理配色，支持深色模式。记账页面采用自定义数字键盘设计，提升录入效率和用户体验。</p>
+  </div>
+
+  <!-- ===== 3. 系统架构 ===== -->
+  <div class="section" id="architecture">
+    <h2><span class="icon">3</span>系统架构</h2>
+
+    <div class="arch-diagram">
+      <div class="arch-label">页面层 Pages</div>
+      <div class="arch-row">
+        <div class="arch-box">Index 首页</div>
+        <div class="arch-box">AddBill 记账</div>
+        <div class="arch-box">BillList 列表</div>
+        <div class="arch-box">Statistics 统计</div>
+        <div class="arch-box">Export 导出</div>
+      </div>
+
+      <div class="arch-arrow">↕</div>
+
+      <div class="arch-label">组件层 Components</div>
+      <div class="arch-row">
+        <div class="arch-box gray">TabBar</div>
+        <div class="arch-box gray">BillItem</div>
+        <div class="arch-box gray">CategoryPicker</div>
+        <div class="arch-box gray">PieChart</div>
+        <div class="arch-box gray">LineChart</div>
+        <div class="arch-box gray">BarChart</div>
+      </div>
+
+      <div class="arch-arrow">↕</div>
+
+      <div class="arch-label">工具层 Utils</div>
+      <div class="arch-row">
+        <div class="arch-box gray">DatabaseHelper</div>
+        <div class="arch-box gray">DateUtils</div>
+        <div class="arch-box gray">FileUtils</div>
+        <div class="arch-box gray">Constants</div>
+        <div class="arch-box gray">ThemeColors</div>
+      </div>
+
+      <div class="arch-arrow">↕</div>
+
+      <div class="arch-label">数据层 Data</div>
+      <div class="arch-row">
+        <div class="arch-box">RDB relationalStore</div>
+        <div class="arch-box">CoreFileKit 文件导出</div>
+      </div>
+    </div>
+
+    <h3>3.1 源码目录结构</h3>
+    <table>
+      <tr>
+        <th>目录</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td><code>entry/src/main/ets/pages/</code></td>
+        <td>5 个页面组件（Index、AddBill、BillList、Statistics、Export）</td>
+      </tr>
+      <tr>
+        <td><code>entry/src/main/ets/components/</code></td>
+        <td>11 个可复用 UI 组件（TabBar、图表、BillItem 等）</td>
+      </tr>
+      <tr>
+        <td><code>entry/src/main/ets/utils/</code></td>
+        <td>工具类（数据库、日期、文件、常量、主题）</td>
+      </tr>
+      <tr>
+        <td><code>entry/src/main/ets/model/</code></td>
+        <td>数据模型（Bill 接口、BillType 枚举）</td>
+      </tr>
+      <tr>
+        <td><code>entry/src/main/ets/entryability/</code></td>
+        <td>应用入口（EntryAbility UIAbility 生命周期）</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ===== 4. 功能实现 ===== -->
+  <div class="section" id="features">
+    <h2><span class="icon">4</span>功能实现</h2>
+
+    <h3>4.1 首页仪表盘</h3>
+    <p>首页展示今日和本月的收支汇总卡片（总支出、总收入、结余），以及最近 5 条账单记录。通过 DatabaseHelper 的 getTodaySummary() 和 getMonthSummary() 方法实时查询统计数据。底部 TabBar 支持在首页、账单、统计、导出之间切换。</p>
+
+    <h3>4.2 记账功能</h3>
+    <p>记账页面采用自定义 UI 设计，包含以下核心交互：</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="emoji">🔢</div>
+        <h4>自定义数字键盘</h4>
+        <p>底部固定 4 行键盘布局，数字键白底、功能键浅灰底、完成键主题蓝底，支持退格删除和小数点输入（限2位小数）</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">📂</div>
+        <h4>分类图标网格</h4>
+        <p>2行×5列分类图标展示，支持分页切换。支出15类、收入6类、其他10类，覆盖日常所有场景</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">📝</div>
+        <h4>时间与备注</h4>
+        <p>自动填充当前时间，备注支持弹窗输入。选择分类后显示常用备注标签，一键填入</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">🔄</div>
+        <h4>再记一笔</h4>
+        <p>保存后清空金额和备注，保留分类和时间，支持连续记账不中断</p>
+      </div>
+    </div>
+
+    <h3>4.3 账单列表</h3>
+    <p>支持按月份左右切换和按周筛选两种查看模式。账单按日期分组展示，每条记录显示分类图标、金额、类型和备注。点击可编辑，长按可删除。</p>
+
+    <h3>4.4 统计图表</h3>
+    <p>提供三种图表类型，均使用 Canvas API 手动绘制，支持触摸交互和动画效果：</p>
+    <table>
+      <tr>
+        <th>图表</th>
+        <th>用途</th>
+        <th>特性</th>
+      </tr>
+      <tr>
+        <td>饼图 PieChart</td>
+        <td>分类占比分析</td>
+        <td>触摸高亮、百分比标签、图例、入场动画</td>
+      </tr>
+      <tr>
+        <td>折线图 LineChart</td>
+        <td>7天收支趋势</td>
+        <td>多系列支持、坐标轴网格、数据点触摸提示</td>
+      </tr>
+      <tr>
+        <td>柱状图 BarChart</td>
+        <td>月度每日收支</td>
+        <td>分组柱状图、触摸高亮、生长动画</td>
+      </tr>
+    </table>
+
+    <h3>4.5 数据导出</h3>
+    <p>支持将账单数据导出为 JSON 或 CSV 格式文件，保存到设备下载目录（/data/storage/el2/base/downloads）。支持按月份、年度、全部或自定义日期范围导出，导出前可预览数据。</p>
+  </div>
+
+  <!-- ===== 5. 核心代码 ===== -->
+  <div class="section" id="code">
+    <h2><span class="icon">5</span>核心代码</h2>
+
+    <h3>5.1 数据库初始化（DatabaseHelper）</h3>
+    <p>采用单例模式封装 RDB 数据库操作，提供账单的完整 CRUD 和统计功能：</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="filename">utils/DatabaseHelper.ets</span>
+        <span class="lang">ArkTS</span>
+      </div>
+      <pre><code><span class="keyword">export class</span> <span class="type">DatabaseHelper</span> {
+  <span class="keyword">private static</span> instance: <span class="type">DatabaseHelper</span> | <span class="keyword">null</span> = <span class="keyword">null</span>
+  <span class="keyword">private</span> rdbStore: relationalStore.<span class="type">RdbStore</span> | <span class="keyword">null</span> = <span class="keyword">null</span>
+
+  <span class="comment">// 单例获取</span>
+  <span class="keyword">static</span> <span class="function">getInstance</span>(): <span class="type">DatabaseHelper</span> {
+    <span class="keyword">if</span> (!DatabaseHelper.instance) {
+      DatabaseHelper.instance = <span class="keyword">new</span> <span class="type">DatabaseHelper</span>()
+    }
+    <span class="keyword">return</span> DatabaseHelper.instance
+  }
+
+  <span class="comment">// 初始化数据库，创建 bills 表</span>
+  <span class="keyword">async</span> <span class="function">initDatabase</span>(context: common.<span class="type">UIAbilityContext</span>): <span class="type">Promise</span>&lt;<span class="keyword">void</span>&gt; {
+    <span class="keyword">const</span> STORE_CONFIG: relationalStore.<span class="type">StoreConfig</span> = {
+      name: DB_NAME,
+      securityLevel: relationalStore.SecurityLevel.S1
+    }
+    <span class="keyword">this</span>.rdbStore = <span class="keyword">await</span> relationalStore.<span class="function">getRdbStore</span>(context, STORE_CONFIG)
+
+    <span class="keyword">const</span> sql = <span class="string">`CREATE TABLE IF NOT EXISTS bills (
+      id TEXT PRIMARY KEY, type INTEGER NOT NULL,
+      amount REAL NOT NULL, category TEXT NOT NULL,
+      remark TEXT DEFAULT '', date TEXT NOT NULL,
+      createTime TEXT NOT NULL, updateTime TEXT NOT NULL
+    )`</span>
+    <span class="keyword">await</span> <span class="keyword">this</span>.rdbStore!.<span class="function">executeSql</span>(sql)
+  }
+}</code></pre>
+    </div>
+
+    <h3>5.2 记账页面核心逻辑</h3>
+    <p>记账页面使用 Stack 布局实现分层显示：主内容区 + 弹窗浮层。数字键盘通过 @Builder 方法构建，按键事件通过私有方法处理：</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="filename">pages/AddBill.ets</span>
+        <span class="lang">ArkTS</span>
+      </div>
+      <pre><code><span class="decorator">@Entry</span>
+<span class="decorator">@Component</span>
+<span class="keyword">struct</span> <span class="type">AddBill</span> {
+  <span class="decorator">@State</span> amountStr: <span class="type">string</span> = <span class="string">''</span>
+  <span class="decorator">@State</span> selectedCategory: <span class="type">string</span> = <span class="string">''</span>
+  <span class="decorator">@State</span> typeTabIndex: <span class="type">number</span> = <span class="number">0</span>
+
+  <span class="function">build</span>() {
+    <span class="type">Stack</span>({ alignContent: Alignment.TopStart }) {
+      <span class="type">Column</span>() {
+        <span class="keyword">this</span>.<span class="function">StatusBar</span>()      <span class="comment">// 模拟状态栏</span>
+        <span class="keyword">this</span>.<span class="function">NavBar</span>()        <span class="comment">// 导航栏</span>
+        <span class="type">Scroll</span>() {
+          <span class="type">Column</span>() {
+            <span class="keyword">this</span>.<span class="function">TypeTabs</span>()     <span class="comment">// 支出/收入/其他</span>
+            <span class="keyword">this</span>.<span class="function">AmountSection</span>() <span class="comment">// 金额输入</span>
+            <span class="keyword">this</span>.<span class="function">CategoryGrid</span>()  <span class="comment">// 分类图标</span>
+            <span class="keyword">this</span>.<span class="function">InfoList</span>()      <span class="comment">// 时间/备注</span>
+          }
+        }
+        <span class="keyword">this</span>.<span class="function">NumericKeyboard</span>() <span class="comment">// 底部数字键盘</span>
+      }
+      <span class="keyword">this</span>.<span class="function">RemarkDialog</span>()    <span class="comment">// 备注弹窗浮层</span>
+    }
+  }
+
+  <span class="comment">// 按键处理逻辑</span>
+  <span class="keyword">private</span> <span class="function">onNumKeyPress</span>(label: <span class="type">string</span>): <span class="keyword">void</span> {
+    <span class="keyword">if</span> (label === <span class="string">'.'</span>) {
+      <span class="keyword">if</span> (!<span class="keyword">this</span>.amountStr.<span class="function">includes</span>(<span class="string">'.'</span>)) {
+        <span class="keyword">this</span>.amountStr += <span class="keyword">this</span>.amountStr.length === <span class="number">0</span> ? <span class="string">'0.'</span> : <span class="string">'.'</span>
+      }
+    } <span class="keyword">else</span> {
+      <span class="keyword">if</span> (<span class="keyword">this</span>.amountStr.<span class="function">includes</span>(<span class="string">'.'</span>)) {
+        <span class="keyword">const</span> decimal = <span class="keyword">this</span>.amountStr.<span class="function">split</span>(<span class="string">'.'</span>)[<span class="number">1</span>]
+        <span class="keyword">if</span> (decimal && decimal.length >= <span class="number">2</span>) <span class="keyword">return</span>
+      }
+      <span class="keyword">this</span>.amountStr += label
+    }
+  }
+}</code></pre>
+    </div>
+
+    <h3>5.3 Canvas 饼图绘制</h3>
+    <p>饼图组件使用 Canvas API 手动绘制扇形、标签和图例，支持触摸交互和入场动画：</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="filename">components/PieChart.ets</span>
+        <span class="lang">ArkTS</span>
+      </div>
+      <pre><code><span class="decorator">@Component</span>
+<span class="keyword">export struct</span> <span class="type">PieChart</span> {
+  <span class="decorator">@Prop</span> data: <span class="type">PieDataItem</span>[] = []
+  <span class="decorator">@Prop</span> chartSize: <span class="type">number</span> = <span class="number">200</span>
+  <span class="decorator">@Prop</span> title: <span class="type">string</span> = <span class="string">''</span>
+  <span class="decorator">@State</span> currentIndex: <span class="type">number</span> = -<span class="number">1</span>
+
+  <span class="keyword">private</span> settings = <span class="keyword">new</span> <span class="type">RenderingContextSettings</span>(<span class="keyword">true</span>)
+  <span class="keyword">private</span> context = <span class="keyword">new</span> <span class="type">CanvasRenderingContext2D</span>(<span class="keyword">this</span>.settings)
+
+  <span class="function">build</span>() {
+    <span class="type">Column</span>() {
+      <span class="type">Canvas</span>(<span class="keyword">this</span>.context)
+        .<span class="function">width</span>(<span class="keyword">this</span>.chartSize)
+        .<span class="function">height</span>(<span class="keyword">this</span>.chartSize)
+        .<span class="function">onReady</span>(() => { <span class="keyword">this</span>.<span class="function">drawPie</span>() })
+        .<span class="function">onTouch</span>((event) => { <span class="keyword">this</span>.<span class="function">handleTouch</span>(event) })
+    }
+  }
+
+  <span class="keyword">private</span> <span class="function">drawPie</span>(): <span class="keyword">void</span> {
+    <span class="keyword">const</span> total = <span class="keyword">this</span>.data.<span class="function">reduce</span>((sum, item) => sum + item.value, <span class="number">0</span>)
+    <span class="keyword">let</span> startAngle = -Math.PI / <span class="number">2</span>
+    <span class="keyword">const</span> cx = <span class="keyword">this</span>.chartSize / <span class="number">2</span>
+    <span class="keyword">const</span> cy = <span class="keyword">this</span>.chartSize / <span class="number">2</span>
+    <span class="keyword">const</span> radius = <span class="keyword">this</span>.chartSize / <span class="number">2</span> - <span class="number">20</span>
+
+    <span class="keyword">for</span> (<span class="keyword">const</span> item <span class="keyword">of</span> <span class="keyword">this</span>.data) {
+      <span class="keyword">const</span> sweep = (item.value / total) * Math.PI * <span class="number">2</span>
+      <span class="keyword">this</span>.context.<span class="function">beginPath</span>()
+      <span class="keyword">this</span>.context.<span class="function">moveTo</span>(cx, cy)
+      <span class="keyword">this</span>.context.<span class="function">arc</span>(cx, cy, radius, startAngle, startAngle + sweep)
+      <span class="keyword">this</span>.context.<span class="function">fillStyle</span> = item.color
+      <span class="keyword">this</span>.context.<span class="function">fill</span>()
+      startAngle += sweep
+    }
+  }
+}</code></pre>
+    </div>
+
+    <h3>5.4 数据库表结构</h3>
+    <table>
+      <tr>
+        <th>字段</th>
+        <th>类型</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td><code>id</code></td>
+        <td>TEXT PRIMARY KEY</td>
+        <td>唯一标识（时间戳+随机数）</td>
+      </tr>
+      <tr>
+        <td><code>type</code></td>
+        <td>INTEGER NOT NULL</td>
+        <td>类型：0=支出，1=收入</td>
+      </tr>
+      <tr>
+        <td><code>amount</code></td>
+        <td>REAL NOT NULL</td>
+        <td>金额</td>
+      </tr>
+      <tr>
+        <td><code>category</code></td>
+        <td>TEXT NOT NULL</td>
+        <td>分类名称</td>
+      </tr>
+      <tr>
+        <td><code>remark</code></td>
+        <td>TEXT DEFAULT ''</td>
+        <td>备注</td>
+      </tr>
+      <tr>
+        <td><code>date</code></td>
+        <td>TEXT NOT NULL</td>
+        <td>日期（YYYY-MM-DD），已建索引</td>
+      </tr>
+      <tr>
+        <td><code>createTime</code></td>
+        <td>TEXT NOT NULL</td>
+        <td>创建时间</td>
+      </tr>
+      <tr>
+        <td><code>updateTime</code></td>
+        <td>TEXT NOT NULL</td>
+        <td>更新时间</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ===== 6. 问题与解决方案 ===== -->
+  <div class="section" id="problems">
+    <h2><span class="icon">6</span>遇到的问题及解决方案</h2>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">编译错误</span>
+        <span class="desc">Type 'void &amp; Promise&lt;RdbStore&gt;' is not assignable to type 'RdbStore | null'</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>getRdbStore() API 签名不需要第三个参数 DB_VERSION，移除后编译通过。同时对 rdbStore 使用非空断言（!）避免 "Object is possibly null" 错误。</p>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">编译错误</span>
+        <span class="desc">'relationalStore' has no exported member named 'ValueBucket'. Did you mean 'ValuesBucket'?</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>API 类型名称拼写错误，将 ValueBucket 修正为 ValuesBucket（注意多一个 s）。</p>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">编译错误</span>
+        <span class="desc">Type 'number | undefined' is not assignable to type 'number'（DatePicker）</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>DatePickerResult 的 year、month、day 属性可能为 undefined，使用空值合并运算符 ?? 提供默认值：value.year ?? 0。</p>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">编译错误</span>
+        <span class="desc">'id' does not exist in BillItem props / 'size' does not exist in PieChart props</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>组件属性名不匹配：BillItem 的 id 应为 billId，PieChart 的 size 应为 chartSize，LineChart 的 width 应为 canvasWidth，BarChart 的 width 应为 chartWidth。</p>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">功能问题</span>
+        <span class="desc">TabBar 切换页面后返回键无效</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>TabBar 使用 router.replaceUrl() 会替换当前页面导致导航栈为空，改为 router.pushUrl() 保留页面栈，使 router.back() 能正确返回上一页。</p>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">编译错误</span>
+        <span class="desc">Property 'flexWrap' does not exist on type 'RowAttribute'</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>ArkTS 的 Row 组件不支持 flexWrap 属性，改用 Flex({ wrap: FlexWrap.Wrap }) 组件实现换行布局。</p>
+      </div>
+    </div>
+
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="tag">编译错误</span>
+        <span class="desc">Unexpected token — @Builder 方法中 ForEach 回调导致解析失败</span>
+      </div>
+      <div class="solution">
+        <div class="label">✅ 解决方案</div>
+        <p>ArkTS 的 @Builder 方法中 ForEach 使用 lambda 回调可能触发解析器异常。将 ForEach 替换为显式的多个组件实例，或将逻辑提取到独立方法中。同时将弹窗浮层从 build() 根节点外移入 Stack 内。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 7. 总结 ===== -->
+  <div class="section" id="summary">
+    <h2><span class="icon">7</span>总结</h2>
+
+    <p>本项目完整实现了一个 HarmonyOS 平台的个人记账应用，涵盖了从需求分析、架构设计到编码实现和问题排查的完整开发流程。</p>
+
+    <h3>7.1 项目成果</h3>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="emoji">✅</div>
+        <h4>功能完整</h4>
+        <p>首页仪表盘、记账、账单管理、统计图表、数据导出五大核心功能全部实现</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">🏗️</div>
+        <h4>架构清晰</h4>
+        <p>页面层、组件层、工具层、数据层四层架构，职责分明，易于维护和扩展</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">🎨</div>
+        <h4>体验优化</h4>
+        <p>自定义数字键盘、分类快捷选择、备注标签、再记一笔等交互设计提升效率</p>
+      </div>
+      <div class="feature-card">
+        <div class="emoji">🐛</div>
+        <h4>问题解决</h4>
+        <p>解决了 7 类编译/运行时错误，包括 API 签名、类型安全、导航栈、组件兼容性等</p>
+      </div>
+    </div>
+
+    <h3>7.2 技术收获</h3>
+    <table>
+      <tr>
+        <th>技术领域</th>
+        <th>收获</th>
+      </tr>
+      <tr>
+        <td>ArkTS 声明式 UI</td>
+        <td>掌握 @Component、@Builder、@State、@Prop、@Link 等装饰器的使用</td>
+      </tr>
+      <tr>
+        <td>HarmonyOS 数据库</td>
+        <td>熟练使用 RDB relationalStore 进行数据的增删改查和统计查询</td>
+      </tr>
+      <tr>
+        <td>Canvas 自定义绘制</td>
+        <td>实现饼图、折线图、柱状图的手动绘制，包含动画和触摸交互</td>
+      </tr>
+      <tr>
+        <td>页面导航</td>
+        <td>理解 pushUrl / replaceUrl / back 的区别和适用场景</td>
+      </tr>
+      <tr>
+        <td>问题排查</td>
+        <td>通过编译日志定位错误，理解 ArkTS 类型系统和组件 API 限制</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ===== 页脚 ===== -->
+<div class="footer">
+  <p>📒 记账本 · HarmonyOS 个人财务管理应用 · 开发报告</p>
+  <p>基于 HarmonyOS SDK 5.1.0 (API 18) · ArkTS Stage 模型</p>
+</div>
+
+</body>
+</html>
