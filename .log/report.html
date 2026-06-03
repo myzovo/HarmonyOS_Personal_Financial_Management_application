@@ -428,6 +428,42 @@
       .container { padding: 0 12px 40px; }
       pre { font-size: 12px; padding: 14px; }
     }
+
+    /* ===== 下载按钮 ===== */
+    .download-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(40, 123, 255, 0.3);
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    .download-btn:hover {
+      background: #1a6dff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(40, 123, 255, 0.4);
+    }
+    .download-btn:active {
+      transform: translateY(0);
+    }
+    .download-btn .icon-download {
+      font-size: 18px;
+    }
+    @media print {
+      .download-btn { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -1009,6 +1045,34 @@
   <p>📒 记账本 · HarmonyOS 个人财务管理应用 · 开发报告</p>
   <p>基于 HarmonyOS SDK 5.1.0 (API 18) · ArkTS Stage 模型</p>
 </div>
+
+<!-- ===== 下载按钮 ===== -->
+<button class="download-btn" onclick="exportWord()">
+  <span class="icon-download">📥</span>
+  <span>下载 Word 文档</span>
+</button>
+
+<script type="text/javascript">
+function exportWord() {
+  try {
+    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
+    html += '<head><meta charset="UTF-8"><title>报告</title>';
+    html += '<style>@page{size:A4;margin:2cm;}.download-btn{display:none!important;}</style>';
+    html += '</head><body>';
+    html += document.body.innerHTML;
+    html += '</body></html>';
+    var blob = new Blob(['﻿' + html], {type: 'application/msword'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '记账本_HarmonyOS项目开发报告.doc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e) {
+    alert('导出失败: ' + e.message);
+  }
+}
+</script>
 
 </body>
 </html>
