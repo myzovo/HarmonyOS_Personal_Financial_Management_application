@@ -6,6 +6,7 @@
 
 import { router } from '@kit.ArkUI'
 import { promptAction } from '@kit.ArkUI'
+import { common } from '@kit.AbilityKit'
 import { Bill, BillType } from '../model/Bill'
 import { DatabaseHelper } from '../utils/DatabaseHelper'
 
@@ -115,6 +116,9 @@ struct AddBill {
     // 初始化当前时间
     this.selectedTime = this.getCurrentDateTime()
 
+    // 确保数据库已初始化（兜底，正常情况下 EntryAbility 已初始化）
+    this.ensureDbReady()
+
     try {
       const params = router.getParams() as Record<string, string>
       if (params && params['billId']) {
@@ -124,6 +128,15 @@ struct AddBill {
       }
     } catch (err) {
       console.error('AddBill', `获取路由参数失败: ${err}`)
+    }
+  }
+
+  private async ensureDbReady(): Promise<void> {
+    try {
+      const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext
+      await DatabaseHelper.getInstance().initDatabase(ctx)
+    } catch (err) {
+      console.info('AddBill', `数据库已初始化或初始化失败: ${err}`)
     }
   }
 

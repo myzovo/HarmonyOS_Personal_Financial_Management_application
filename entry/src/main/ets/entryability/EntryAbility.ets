@@ -1,6 +1,7 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { DatabaseHelper } from '../utils/DatabaseHelper';
 
 const DOMAIN = 0x0000;
 
@@ -8,6 +9,13 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+
+    // 初始化数据库
+    DatabaseHelper.getInstance().initDatabase(this.context).then(() => {
+      hilog.info(DOMAIN, 'testTag', '数据库初始化成功');
+    }).catch((err: Error) => {
+      hilog.error(DOMAIN, 'testTag', '数据库初始化失败: %{public}s', JSON.stringify(err));
+    });
   }
 
   onDestroy(): void {

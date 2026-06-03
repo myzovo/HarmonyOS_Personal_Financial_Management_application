@@ -62,6 +62,9 @@ export class DatabaseHelper {
   /** 应用上下文 */
   private context: common.UIAbilityContext | null = null
 
+  /** 数据库初始化完成的 Promise，供 getStore() 等待 */
+  private dbReady: Promise<void> | null = null
+
   /**
    * 私有构造函数，防止外部直接创建实例
    */
@@ -85,7 +88,26 @@ export class DatabaseHelper {
    * @param context 应用上下文（UIAbilityContext）
    */
   async initDatabase(context: common.UIAbilityContext): Promise<void> {
+    // 已经初始化完成，直接返回
+    if (this.rdbStore) {
+      return
+    }
+    // 正在初始化中，等待同一次初始化完成
+    if (this.dbReady) {
+      return this.dbReady
+    }
     this.context = context
+
+    // 将初始化过程保存为 Promise，供 getStore() 等待
+    this.dbReady = this.doInit()
+    return this.dbReady
+  }
+
+  /**
+   * 实际的数据库初始化逻辑
+   */
+  private async doInit(): Promise<void> {
+    const context = this.context!
 
     // 数据库配置
     const STORE_CONFIG: relationalStore.StoreConfig = {
@@ -116,6 +138,9 @@ export class DatabaseHelper {
       await this.rdbStore!.executeSql(createIndexSql)
 
       console.info('DatabaseHelper', '数据库初始化成功，bills 表已创建')
+
+      // 首次启动时插入示例数据
+      await this.insertSeedDataIfEmpty()
     } catch (err) {
       console.error('DatabaseHelper', `数据库初始化失败: ${err}`)
       throw new Error(`数据库初始化失败: ${err}`)
@@ -124,10 +149,18 @@ export class DatabaseHelper {
 
   /**
    * 获取数据库实例（内部使用）
-   * 如果未初始化则抛出异常
+   * 如果数据库尚未初始化完成，会自动等待
    * @returns RdbStore 数据库实例
    */
-  private getStore(): relationalStore.RdbStore {
+  private async getStore(): Promise<relationalStore.RdbStore> {
+    // rdbStore 已就绪，直接返回（避免 doInit 内部调用时死锁）
+    if (this.rdbStore) {
+      return this.rdbStore
+    }
+    // 数据库正在初始化中，等待其完成
+    if (this.dbReady) {
+      await this.dbReady
+    }
     if (!this.rdbStore) {
       throw new Error('数据库未初始化，请先调用 initDatabase() 方法')
     }
@@ -212,6 +245,72 @@ export class DatabaseHelper {
     return `${year}-${month}`
   }
 
+  // ==================== 示例数据 ====================
+
+  /**
+   * 首次启动时插入示例账单数据
+   * 仅在 bills 表为空时执行，避免重复插入
+   */
+  private async insertSeedDataIfEmpty(): Promise<void> {
+    const store = await this.getStore()
+
+    try {
+      // 检查表中是否已有数据
+      const countSql = `SELECT COUNT(*) as cnt FROM ${TABLE_BILLS}`
+      const countResult = await store.querySql(countSql)
+      let count = 0
+      if (countResult.rowCount > 0 && countResult.goToNextRow()) {
+        count = countResult.getLong(countResult.getColumnIndex('cnt'))
+      }
+      countResult.close()
+
+      if (count > 0) {
+        console.info('DatabaseHelper', `bills 表已有 ${count} 条数据，跳过示例数据插入`)
+        return
+      }
+
+      // 插入示例账单数据（覆盖最近 7 天，多种分类）
+      const seedBills: Bill[] = [
+        // ---- 2026-06-03 (今天) ----
+        { id: '', amount: 35, type: BillType.EXPENSE, category: '餐饮', description: '午餐', date: '2026-06-03', createdAt: '', updatedAt: '' },
+        { id: '', amount: 6, type: BillType.EXPENSE, category: '交通', description: '地铁', date: '2026-06-03', createdAt: '', updatedAt: '' },
+        { id: '', amount: 88, type: BillType.EXPENSE, category: '餐饮', description: '晚餐聚餐', date: '2026-06-03', createdAt: '', updatedAt: '' },
+        // ---- 2026-06-02 ----
+        { id: '', amount: 299, type: BillType.EXPENSE, category: '购物', description: '夏装', date: '2026-06-02', createdAt: '', updatedAt: '' },
+        { id: '', amount: 45, type: BillType.EXPENSE, category: '娱乐', description: '电影', date: '2026-06-02', createdAt: '', updatedAt: '' },
+        { id: '', amount: 25, type: BillType.EXPENSE, category: '餐饮', description: '早餐+咖啡', date: '2026-06-02', createdAt: '', updatedAt: '' },
+        // ---- 2026-06-01 ----
+        { id: '', amount: 2500, type: BillType.EXPENSE, category: '住房', description: '房租', date: '2026-06-01', createdAt: '', updatedAt: '' },
+        { id: '', amount: 128, type: BillType.EXPENSE, category: '医疗', description: '药品', date: '2026-06-01', createdAt: '', updatedAt: '' },
+        { id: '', amount: 15000, type: BillType.INCOME, category: '工资', description: '6月工资', date: '2026-06-01', createdAt: '', updatedAt: '' },
+        // ---- 2026-05-31 ----
+        { id: '', amount: 159, type: BillType.EXPENSE, category: '服饰', description: '运动鞋', date: '2026-05-31', createdAt: '', updatedAt: '' },
+        { id: '', amount: 42, type: BillType.EXPENSE, category: '餐饮', description: '外卖', date: '2026-05-31', createdAt: '', updatedAt: '' },
+        // ---- 2026-05-30 ----
+        { id: '', amount: 200, type: BillType.EXPENSE, category: '运动', description: '健身月卡', date: '2026-05-30', createdAt: '', updatedAt: '' },
+        { id: '', amount: 68, type: BillType.EXPENSE, category: '教育', description: '技术书籍', date: '2026-05-30', createdAt: '', updatedAt: '' },
+        { id: '', amount: 3000, type: BillType.INCOME, category: '奖金', description: '项目奖金', date: '2026-05-30', createdAt: '', updatedAt: '' },
+        // ---- 2026-05-29 ----
+        { id: '', amount: 350, type: BillType.EXPENSE, category: '旅行', description: '周末短途', date: '2026-05-29', createdAt: '', updatedAt: '' },
+        { id: '', amount: 15, type: BillType.EXPENSE, category: '交通', description: '打车', date: '2026-05-29', createdAt: '', updatedAt: '' },
+        { id: '', amount: 520, type: BillType.INCOME, category: '理财', description: '基金收益', date: '2026-05-29', createdAt: '', updatedAt: '' },
+        // ---- 2026-05-28 ----
+        { id: '', amount: 56, type: BillType.EXPENSE, category: '餐饮', description: '聚餐', date: '2026-05-28', createdAt: '', updatedAt: '' },
+        { id: '', amount: 89, type: BillType.EXPENSE, category: '购物', description: '日用品', date: '2026-05-28', createdAt: '', updatedAt: '' },
+        { id: '', amount: 800, type: BillType.INCOME, category: '兼职', description: '外包项目', date: '2026-05-28', createdAt: '', updatedAt: '' },
+      ]
+
+      for (const bill of seedBills) {
+        await this.insertBill(bill)
+      }
+
+      console.info('DatabaseHelper', `示例数据插入完成，共 ${seedBills.length} 条`)
+    } catch (err) {
+      console.error('DatabaseHelper', `插入示例数据失败: ${err}`)
+      // 示例数据插入失败不影响应用正常运行
+    }
+  }
+
   // ==================== 增删改查操作 ====================
 
   /**
@@ -220,7 +319,7 @@ export class DatabaseHelper {
    * @returns 插入成功后的账单对象（含自动生成的字段）
    */
   async insertBill(bill: Bill): Promise<Bill> {
-    const store = this.getStore()
+    const store = await this.getStore()
 
     // 自动生成缺失字段
     const currentTime = this.getCurrentTime()
@@ -258,7 +357,7 @@ export class DatabaseHelper {
    * @returns 是否更新成功
    */
   async updateBill(bill: Bill): Promise<boolean> {
-    const store = this.getStore()
+    const store = await this.getStore()
 
     if (!bill.id) {
       throw new Error('更新账单失败：缺少账单 id')
@@ -299,7 +398,7 @@ export class DatabaseHelper {
    * @returns 是否删除成功
    */
   async deleteBill(id: string): Promise<boolean> {
-    const store = this.getStore()
+    const store = await this.getStore()
 
     try {
       // 创建删除条件：WHERE id = ?
@@ -325,7 +424,7 @@ export class DatabaseHelper {
    * @returns 账单数组，按日期降序排列
    */
   async queryBills(month?: string): Promise<Bill[]> {
-    const store = this.getStore()
+    const store = await this.getStore()
     const bills: Bill[] = []
 
     try {
@@ -371,7 +470,7 @@ export class DatabaseHelper {
    * @returns 指定日期范围内的账单数组，按日期降序排列
    */
   async queryBillsByDateRange(startDate: string, endDate: string): Promise<Bill[]> {
-    const store = this.getStore()
+    const store = await this.getStore()
     const bills: Bill[] = []
 
     try {
@@ -412,7 +511,7 @@ export class DatabaseHelper {
    * @returns 统计结果数组，按总金额降序排列
    */
   async queryStatistics(type: BillType, startDate: string, endDate: string): Promise<StatisticsResult[]> {
-    const store = this.getStore()
+    const store = await this.getStore()
     const results: StatisticsResult[] = []
 
     try {
@@ -472,7 +571,7 @@ export class DatabaseHelper {
    * @returns 本月收支汇总对象
    */
   async getMonthSummary(): Promise<SummaryResult> {
-    const store = this.getStore()
+    const store = await this.getStore()
     const currentMonth = this.getCurrentMonth()
 
     try {
@@ -532,7 +631,7 @@ export class DatabaseHelper {
    * @returns 收支汇总对象
    */
   private async getSummaryByDate(startDate: string, endDate: string): Promise<SummaryResult> {
-    const store = this.getStore()
+    const store = await this.getStore()
 
     try {
       // 使用原生 SQL 按类型分组统计指定日期范围的数据

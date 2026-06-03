@@ -10,8 +10,8 @@ HarmonyOS personal finance/bookkeeping app (记账本) built with ArkTS using th
 
 ## Build & Run
 
-**Build tool:** Hvigor (HarmonyOS build system)  
-**Package manager:** OHPM (OpenHarmony Package Manager)  
+**Build tool:** Hvigor (HarmonyOS build system)
+**Package manager:** OHPM (OpenHarmony Package Manager)
 **IDE:** DevEco Studio
 
 ```bash
@@ -49,6 +49,8 @@ utils/            Utilities (database, dates, file export, theme, constants)
 | Statistics | `pages/Statistics` | Charts: pie, line (7-day trend), bar (monthly daily) |
 | Export | `pages/Export` | JSON/CSV export with range selection |
 
+Page routes are registered in `entry/src/main/resources/base/profile/main_pages.json`.
+
 ### Navigation
 
 - Bottom TabBar (4 tabs: Home, Bills, Statistics, Export)
@@ -66,8 +68,12 @@ utils/            Utilities (database, dates, file export, theme, constants)
 
 - **Singleton database:** `DatabaseHelper.getInstance()` for all DB operations
 - **Theme:** Centralized in `ThemeColors.ets` with color constants for light/dark modes
-- **Categories:** Predefined lists in `Constants.ets` (9 expense, 5 income categories)
+- **Categories:** Predefined lists in `Constants.ets` (15 expense, 6 income categories with emoji icons)
 - **Charts:** Canvas-based PieChart, LineChart, BarChart with touch interaction and animations
+- **Field mapping note:** The `Bill` interface uses `description` for remarks, but the DB column is `remark`. Similarly `createdAt`/`updatedAt` map to DB columns `createTime`/`updateTime`. This mapping is handled in `DatabaseHelper.billToValueBucket()` and `resultSetToBill()`.
+- **ID generation:** Bill IDs are generated as `${Date.now()}_${randomString}` — timestamp + random suffix
+- **Page state:** Pages use `@State` for local state, `@Prop` for one-way parent→child binding, `@Link` for two-way binding (e.g., TabBar's selectedIndex)
+- **Async pattern:** All database operations are async; pages call them in `aboutToAppear()` or event handlers with `.then()/.catch()` chaining
 
 ## Testing
 
@@ -84,8 +90,8 @@ hvigor assembleHap --target ohosTest
 
 ## Linting
 
-Config: `code-linter.json5`  
-Applies to: `*.ets` files  
+Config: `code-linter.json5`
+Applies to: `*.ets` files
 Rule sets: `@performance/recommended`, `@typescript-eslint/recommended`, `@security/no-unsafe-*`
 
 ## SDK APIs

@@ -60,6 +60,29 @@ function escapeCSVField(field: string): string {
  */
 export class FileUtils {
   /**
+   * 确保导出目录存在，不存在则逐级创建
+   * @param dirPath 目录路径
+   */
+  private static ensureDir(dirPath: string): void {
+    try {
+      fileIo.accessSync(dirPath)
+      // 目录已存在
+      return
+    } catch {
+      // 目录不存在，先确保父目录存在
+      const lastSlash = dirPath.lastIndexOf('/')
+      if (lastSlash > 0) {
+        FileUtils.ensureDir(dirPath.substring(0, lastSlash))
+      }
+      try {
+        fileIo.mkdirSync(dirPath)
+      } catch {
+        // 并发或其他原因导致目录已存在，忽略
+      }
+    }
+  }
+
+  /**
    * 将账单数据导出为 JSON 文件
    * @param bills 账单数据数组
    * @returns Promise<string> 导出文件的完整路径
@@ -74,6 +97,9 @@ export class FileUtils {
       // 构建完整的文件保存路径（公共下载目录）
       const downloadDir = '/data/storage/el2/base/downloads'
       const filePath = `${downloadDir}/${fileName}`
+
+      // 确保目录存在
+      FileUtils.ensureDir(downloadDir)
 
       // 将账单数据转换为格式化的 JSON 字符串
       const jsonData = JSON.stringify(bills, null, 2)
@@ -107,6 +133,9 @@ export class FileUtils {
       // 构建完整的文件保存路径（公共下载目录）
       const downloadDir = '/data/storage/el2/base/downloads'
       const filePath = `${downloadDir}/${fileName}`
+
+      // 确保目录存在
+      FileUtils.ensureDir(downloadDir)
 
       // 构建 CSV 内容
       // 添加 BOM 头以确保 Excel 正确识别中文编码
